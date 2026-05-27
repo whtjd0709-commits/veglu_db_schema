@@ -1,3 +1,5 @@
+-- 테스트 데이터 초기화 및 삽입
+
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE reviews;
 TRUNCATE TABLE user_preferences;

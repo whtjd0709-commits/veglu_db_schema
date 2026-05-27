@@ -1,3 +1,5 @@
+--테이블 생성
+
 -- 유저
 CREATE TABLE users (
     user_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '사용자 고유 ID',
