@@ -11,7 +11,7 @@ CREATE TABLE users (
     user_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '가입일시',
     user_last_login_at TIMESTAMP COMMENT '마지막 로그인',
     user_deleted_at TIMESTAMP COMMENT '탈퇴일시 (soft delete)',
-    -- 복합 유니크 혹은 단일 유니크 제약조건 필수 추가
+
     UNIQUE KEY uidx_user_email (user_email) 
 ) COMMENT='사용자 정보';
 
@@ -49,9 +49,10 @@ CREATE TABLE restaurants (
     restaurant_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '수정일시',
     
     SPATIAL INDEX idx_restaurant_location (restaurant_location),
-    -- [인덱스 추가] 카테고리별 검색 및 상태 필터링 최적화
     INDEX idx_restaurant_cat_status (restaurant_category, restaurant_status), 
+
     FOREIGN KEY (restaurant_owner_id) REFERENCES users(user_id) ON DELETE SET NULL
+
 ) COMMENT='비건/GF 식당 정보';
 
 -- 프로필
@@ -63,7 +64,9 @@ CREATE TABLE user_preferences (
     pref_spicy_level INT COMMENT '선호 매운맛 단계 (0~5)',
     pref_preferred_price_range VARCHAR(50) COMMENT '선호 가격대',
     pref_dietary_restrictions JSON COMMENT '식이 제한 (비건/할랄 등)',
+
     FOREIGN KEY (pref_user_id) REFERENCES users(user_id) ON DELETE CASCADE
+
 ) COMMENT='사용자 프로필';
 
 -- 리뷰
@@ -87,8 +90,7 @@ CREATE TABLE reviews (
     
     FOREIGN KEY (review_restaurant_id) REFERENCES restaurants(restaurant_id) ON DELETE CASCADE,
     FOREIGN KEY (review_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    -- [인덱스 추가] 특정 식당의 최신 리뷰 순 정렬 조회 최적화
+
     INDEX idx_review_restaurant_created (review_restaurant_id, review_created_at DESC),
-    -- [인덱스 추가] 특정 유저가 작성한 최신 리뷰 순 정렬 조회 최적화
     INDEX idx_review_user_created (review_user_id, review_created_at DESC)
 ) COMMENT='사용자 리뷰';
