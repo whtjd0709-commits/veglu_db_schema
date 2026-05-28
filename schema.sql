@@ -1,15 +1,7 @@
--- 1. 데이터베이스가 없으면 생성
-CREATE DATABASE IF NOT EXISTS veglu_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+--테이블 생성 SQL 스크립트
 
--- 2. 생성한 데이터베이스 선택 (필수!)
+--데이터베이스 선택
 USE veglu_db;
-
--- 3. 기존 테이블이 있다면 초기화 (순서 주의: FK 제약조건 때문에 역순으로 지워야 안전합니다)
-DROP TABLE IF EXISTS reviews;
-DROP TABLE IF EXISTS user_preferences;
-DROP TABLE IF EXISTS restaurants;
-DROP TABLE IF EXISTS users;
-
 
 -- 1. 유저 (users) 테이블
 CREATE TABLE users (
@@ -29,8 +21,7 @@ CREATE TABLE users (
 ) COMMENT='사용자 정보';
 
 
--- 2. 유저 프로필 및 선호도 (user_preferences) 테이블
--- * users 테이블과 1:1 관계 (공유 식별자 구조)
+-- 2. 유저 프로필 및 선호도 (user_preferences)
 CREATE TABLE user_preferences (
     pref_user_id BIGINT PRIMARY KEY COMMENT '사용자 ID',
     pref_favorite_categories JSON COMMENT '선호 카테고리',
