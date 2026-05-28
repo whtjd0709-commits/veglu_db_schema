@@ -20,7 +20,7 @@ INSERT INTO users (user_email, user_password, user_nickname, user_profile_image_
 ('admin@greenfork.kr',    '$2b$12$hashedpw001', '관리자',     'https://cdn.greenfork.kr/profiles/admin.jpg',   '그린포크 운영팀입니다.',       'LOCAL',  'ADMIN', '2024-01-01 09:00:00', '2025-05-20 10:00:00'),
 ('owner1@vegieplace.kr',  '$2b$12$hashedpw002', '채식당주인1', 'https://cdn.greenfork.kr/profiles/owner1.jpg',  '비건 식당을 운영하고 있습니다.', 'LOCAL',  'OWNER', '2024-02-10 11:30:00', '2025-05-19 08:45:00'),
 ('owner2@soulgreen.kr',   '$2b$12$hashedpw003', '채식당주인2', 'https://cdn.greenfork.kr/profiles/owner2.jpg',  '서울 비건 맛집 운영 중.',       'KAKAO',  'OWNER', '2024-03-05 14:00:00', '2025-05-18 12:00:00'),
-('user1@gmail.com',       '$2b$12$hashedpw004', '비건여정',   'https://cdn.greenfork.kr/profiles/user1.jpg',   '채식 3년차, 맛집 탐방 중 🌿',   'GOOGLE', 'USER',  '2024-04-01 10:00:00', '2025-05-21 07:30:00'),
+('user1@gmail.com',       '$2b$12$hashedpw004', '비건여정',   'https://cdn.greenfork.kr/profiles/user1.jpg',   '채식 3년차, 맛집 탐방 중 ',   'GOOGLE', 'USER',  '2024-04-01 10:00:00', '2025-05-21 07:30:00'),
 ('user2@naver.com',       '$2b$12$hashedpw005', '글루텐프리',  'https://cdn.greenfork.kr/profiles/user2.jpg',   '밀 알러지 있어요. GF 전문가!',  'NAVER',  'USER',  '2024-04-15 09:15:00', '2025-05-20 18:00:00'),
 ('user3@kakao.com',       NULL,                 '초록밥상',   'https://cdn.greenfork.kr/profiles/user3.jpg',   '채식 입문 중입니다.',           'KAKAO',  'USER',  '2024-05-20 16:00:00', '2025-05-17 20:10:00'),
 ('user4@apple.com',       NULL,                 '플랜트베이스', 'https://cdn.greenfork.kr/profiles/user4.jpg',  '비건 1년차 도전!',              'APPLE',  'USER',  '2024-06-01 08:00:00', '2025-05-21 09:00:00'),
