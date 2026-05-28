@@ -1,4 +1,15 @@
+-- 1. 데이터베이스가 없으면 생성
+CREATE DATABASE IF NOT EXISTS veglu_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 2. 생성한 데이터베이스 선택 (필수!)
 USE veglu_db;
+
+-- 3. 기존 테이블이 있다면 초기화 (순서 주의: FK 제약조건 때문에 역순으로 지워야 안전합니다)
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS user_preferences;
+DROP TABLE IF EXISTS restaurants;
+DROP TABLE IF EXISTS users;
+
 
 -- 1. 유저 (users) 테이블
 CREATE TABLE users (
