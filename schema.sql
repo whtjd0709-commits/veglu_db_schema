@@ -4,9 +4,9 @@ USE veglu_db;
 CREATE TABLE users (
     user_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '사용자 고유 ID',
     user_email VARCHAR(255) NOT NULL COMMENT '이메일 (로그인 ID)',
-    user_password VARCHAR(255) COMMENT 'BCrypt 해시 비밀번호',
+    user_password VARCHAR(255) COMMENT '비밀번호',
     user_nickname VARCHAR(100) NOT NULL COMMENT '닉네임',
-    user_profile_image_url VARCHAR(500) COMMENT 'PRO필 사진 URL',
+    user_profile_image_url VARCHAR(500) COMMENT '프로필 사진 URL',
     user_bio VARCHAR(500) COMMENT '자기소개',
     user_provider ENUM('LOCAL', 'KAKAO', 'NAVER', 'GOOGLE', 'APPLE') NOT NULL COMMENT '로그인 제공처',
     user_role ENUM('USER', 'OWNER', 'ADMIN') NOT NULL COMMENT '사용자 권한',
@@ -30,7 +30,7 @@ CREATE TABLE user_preferences (
     pref_dietary_restrictions JSON COMMENT '식이 제한 (비건/할랄 등)',
     
     FOREIGN KEY (pref_user_id) REFERENCES users(user_id) ON DELETE CASCADE
-) COMMENT='사용자 프로필 및 선호도 (users와 1:1)';
+) COMMENT='사용자 프로필 및 선호도';
 
 
 -- 3. 식당 (restaurants) 테이블
