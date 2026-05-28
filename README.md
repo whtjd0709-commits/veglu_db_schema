@@ -1,4 +1,4 @@
-# 🥗 VegLu DB (veglu_db) - 필수 항목 가이드
+# 🥗 Veglu DB (veglu_db) - 필수 항목 가이드
 
 비건 및 글루텐 프리(GF) 식당 추천 서비스 **VegLu**의 데이터베이스 테이블별 **필수 입력(`NOT NULL`) 컬럼** 명세입니다. 
 
