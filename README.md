@@ -1,60 +1,24 @@
-# 🥗 Veglu DB (veglu_db) - 필수 항목 가이드
+# 🥦 Veglu DB & Backend Integration Guide
 
-비건 및 글루텐 프리(GF) 식당 추천 서비스 **Veglu**의 데이터베이스 테이블별 **필수 입력(`NOT NULL`) 컬럼** 명세입니다. 
-
----
-
-## 🛠️ 배포 안내 (Data Protection)
-* 아래 명시된 `NOT NULL` 컬럼들은 데이터 저장 시 값이 누락되면 DB 에러가 발생하므로, 백엔드 엔티티(Entity) 및 DTO 설계 시 **필수(Required) 검증** 처리가 필요합니다.
+채식주의자(비건) 및 글루텐 프리(GF) 식당 큐레이션 서비스 **Veglu**의 데이터베이스(veglu_db) 스펙 및 백엔드 비즈니스 로직 가이드라인입니다.
 
 ---
 
-## 📌 테이블별 필수(`NOT NULL`) 컬럼 명세
-
-### 1. 유저 정보 테이블 (`users`)
-회원가입 및 시스템 권한 식별을 위해 반드시 필요한 핵심 정보입니다.
-
-| 필수 컬럼명 | 데이터 타입 | 설명 |
-| :--- | :--- | :--- |
-| **`user_id`** | BIGINT | PK (자동 생성되는 고유 식별 ID) |
-| **`user_email`** | VARCHAR(255) | 로그인 ID로 사용되는 이메일 (UNIQUE) |
-| **`user_nickname`** | VARCHAR(100) | 서비스 내에서 식별할 유저 닉네임 |
-| **`user_provider`** | ENUM | 로그인 제공처 ('LOCAL', 'KAKAO', 'NAVER', 'GOOGLE', 'APPLE') |
-| **`user_role`** | ENUM | 사용자 접근 권한 ('USER', 'OWNER', 'ADMIN') |
-| **`user_created_at`** | TIMESTAMP | 계정 생성 일시 (시스템 자동 생성) |
+## 🛠️ 1. 개발 환경 및 DB 사양
+- **DBMS:** MySQL 8.0 이상 권장
+- **공간 인덱스 필수:** 식당 위치 조회를 위해 `SPATIAL INDEX` 및 `SRID 4326(WGS 84)`을 사용합니다. MySQL 내장 공간 엔진 버전을 반드시 확인해 주세요.
+- **Timezone:** `Asia/Seoul` (AWS RDS 인스턴스 생성 시 타임존 설정을 무조건 변경해 주세요. 미설정 시 UTC로 작동하여 생성/수정 시간이 9시간 느려집니다.)
 
 ---
 
-### 2. 식당 정보 테이블 (`restaurants`)
-식당 등록 및 위치 기반 지도 검색을 수행하기 위해 단 하나라도 누락되면 안 되는 필수 데이터입니다.
+## 💡 2. 핵심 비즈니스 로직 및 구현 가이드
 
-| 필수 컬럼명 | 데이터 타입 | 설명 |
-| :--- | :--- | :--- |
-| **`restaurant_id`** | BIGINT | PK (자동 생성되는 식당 고유 ID) |
-| **`restaurant_name`** | VARCHAR(255) | 상호명 / 가게 이름 |
-| **`restaurant_address`** | VARCHAR(255) | 서비스 기준이 되는 도로명 주소 |
-| **`restaurant_location`** | POINT | 반경 검색용 위경도 좌표 (Spatial Index 적용) |
-| **`restaurant_latitude`** | DOUBLE | 지도 마커 표시용 위도 수치값 |
-| **`restaurant_longitude`** | DOUBLE | 지도 마커 표시용 경도 수치값 |
-| **`restaurant_category`** | VARCHAR(50) | 비건/GF 등 대분류 카테고리 |
-| **`restaurant_price_range`** | VARCHAR(50) | 식당 가격대 범위 (LOW ~ VERY_HIGH) |
-| **`restaurant_business_hours`**| JSON | 백엔드 파싱용 요일별 영업시간 데이터 |
-| **`restaurant_status`** | VARCHAR(20) | 현재 매장 상태 ('OPEN', 'TEMP_CLOSED', 'CLOSED') |
-| **`restaurant_created_at`** | TIMESTAMP | 식당 데이터 등록 일시 (시스템 자동 생성) |
-| **`restaurant_updated_at`** | TIMESTAMP | 식당 데이터 수정 일시 (변경 시 자동 갱신) |
-
----
-
-### 3. 사용자 리뷰 테이블 (`reviews`)
-신뢰도 높은 리뷰 시스템을 유지하기 위해 작성 시 무조건 채워져야 하는 기본 조건입니다.
-
-| 필수 컬럼명 | 데이터 타입 | 설명 |
-| :--- | :--- | :--- |
-| **`review_id`** | BIGINT | PK (자동 생성되는 리뷰 고유 ID) |
-| **`review_restaurant_id`** | BIGINT | FK (어느 식당에 작성된 리뷰인지 식별) |
-| **`review_user_id`** | BIGINT | FK (어느 유저가 작성한 리뷰인지 식별) |
-| **`review_rating`** | DOUBLE | 유저가 부여한 종합 평점 별점 (1.0 ~ 5.0) |
-| **`review_content`** | TEXT | 리뷰 본문 텍스트 내용 |
-| **`review_created_at`** | TIMESTAMP | 리뷰 작성 시간 (시스템 자동 생성) |
-
-*(※ `user_preferences` 테이블은 모든 항목이 선택 사항(Optional)이므로 필수 `NOT NULL` 컬럼이 존재하지 않습니다.)*
+### 📍 위치 기반 식당 검색 시 주의사항 (`restaurants`)
+- `restaurant_location` 컬럼은 위경도 좌표를 저장하는 `POINT` 타입이며, `SRID 4326` 규격을 따릅니다.
+- **🚨 중요 (위도/경도 순서 에러 방지):** MySQL의 `SRID 4326` 환경에서는 일반적인 지도 API와 반대로 **`POINT(위도 경도)` 즉, `POINT(Latitude Longitude)` 순서**로 데이터를 다루어야 합니다. 경도를 앞에 넣으면 `Latitude out of range (Error 3617)` 예외가 발생합니다.
+- **반경 검색 쿼리 예시:** 내 주변 반경 3km 이내 식당을 가까운 순으로 조회할 때 내장 함수 `ST_Distance_Sphere`를 활용하세요.
+  ```sql
+  SELECT *, ST_Distance_Sphere(restaurant_location, ST_GeomFromText('POINT(현재위도 현재경도)', 4326)) AS distance
+  FROM restaurants
+  WHERE ST_Distance_Sphere(restaurant_location, ST_GeomFromText('POINT(현재위도 현재경도)', 4326)) <= 3000
+  ORDER BY distance ASC;
