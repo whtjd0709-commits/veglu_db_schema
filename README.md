@@ -1,24 +1,41 @@
-# 🥦 Veglu DB & Backend Integration Guide
+# 📄 [README] veglu_db 테이블 기반 백엔드 개발 가이드
 
-채식주의자(비건) 및 글루텐 프리(GF) 식당 큐레이션 서비스 **Veglu**의 데이터베이스(veglu_db) 스펙 및 백엔드 비즈니스 로직 가이드라인입니다.
-
----
-
-## 🛠️ 1. 개발 환경 및 DB 사양
-- **DBMS:** MySQL 8.0 이상 권장
-- **공간 인덱스 필수:** 식당 위치 조회를 위해 `SPATIAL INDEX` 및 `SRID 4326(WGS 84)`을 사용합니다. MySQL 내장 공간 엔진 버전을 반드시 확인해 주세요.
-- **Timezone:** `Asia/Seoul` (AWS RDS 인스턴스 생성 시 타임존 설정을 무조건 변경해 주세요. 미설정 시 UTC로 작동하여 생성/수정 시간이 9시간 느려집니다.)
+본 문서는 `veglu_db` 데이터베이스 스크립트를 기반으로 백엔드(JPA, MyBatis 등) 엔티티(Entity)를 설계하고 비즈니스 로직을 구현할 때 참고해야 하는 **핵심 개발 가이드라인**입니다.
 
 ---
 
-## 💡 2. 핵심 비즈니스 로직 및 구현 가이드
+## 💡 1. 전역 설정 및 인프라 체크 (가장 중요)
 
-### 📍 위치 기반 식당 검색 시 주의사항 (`restaurants`)
-- `restaurant_location` 컬럼은 위경도 좌표를 저장하는 `POINT` 타입이며, `SRID 4326` 규격을 따릅니다.
-- **🚨 중요 (위도/경도 순서 에러 방지):** MySQL의 `SRID 4326` 환경에서는 일반적인 지도 API와 반대로 **`POINT(위도 경도)` 즉, `POINT(Latitude Longitude)` 순서**로 데이터를 다루어야 합니다. 경도를 앞에 넣으면 `Latitude out of range (Error 3617)` 예외가 발생합니다.
-- **반경 검색 쿼리 예시:** 내 주변 반경 3km 이내 식당을 가까운 순으로 조회할 때 내장 함수 `ST_Distance_Sphere`를 활용하세요.
-  ```sql
-  SELECT *, ST_Distance_Sphere(restaurant_location, ST_GeomFromText('POINT(현재위도 현재경도)', 4326)) AS distance
-  FROM restaurants
-  WHERE ST_Distance_Sphere(restaurant_location, ST_GeomFromText('POINT(현재위도 현재경도)', 4326)) <= 3000
-  ORDER BY distance ASC;
+### 📍 1) 위도/경도(Spatial) 좌표 다루기
+* **대상 컬럼**: `restaurants.restaurant_location` (`POINT` 타입, SRID 4326)
+* **[주의] 좌표 삽입 순서**: MySQL WGS84 기준, 데이터 삽입/수정 시 반드시 **`POINT(경도 위도)`** 순서로 넣어야 합니다. (순서가 바뀌면 국내 식당이 태평양 한가운데로 가버립니다.)
+* **쿼리 주의**: 내 주변 식당 검색 등 위치 기반 조회 시 일반 비교 연산자(`<`, `>`)를 쓰면 안 됩니다. 반드시 `ST_Distance_Sphere` 같은 전용 공간 함수를 써야 **공간 인덱스(`idx_restaurant_location`)**가 정상 작동합니다.
+* **프레임워크 설정**: JPA(Hibernate) 사용 시 `Hibernate Spatial` 의존성을 추가하고, Jackson이 `Geometry` 타입을 올바르게 직렬화할 수 있도록 별도 모듈(예: `JtsModule`)을 Bean으로 등록해 주세요.
+
+### 📦 2) JSON 데이터 매핑하기
+* **대상 컬럼**: 유저 선호 카테고리, 식당 영업시간, 결제 수단, 리뷰 사진 목록 등 (`JSON` 타입)
+* **개발 가이드**: DB의 JSON 문법을 매번 Java 코드로 수동 파싱하면 생산성이 떨어집니다. 엔티티 매핑 시 `List<String>`이나 구조화된 객체(VO)로 **자동 변환해 주는 커스텀 Converter**(JPA의 `@Convert`, MyBatis의 `TypeHandler`)를 반드시 구현해 주세요.
+
+---
+
+## 🛠️ 2. 테이블별 핵심 비즈니스 로직
+
+### 👤 유저 (users) & 선호도 (user_preferences)
+* **소셜 로그인 예외**: 카카오, 네이버 등으로 가입한 유저는 비밀번호(`user_password`)가 `NULL`입니다. 로그인/회원가입 검증(Validation) 로직에서 소셜 유저는 비밀번호 필수 체크를 제외하세요.
+* **회원 탈퇴 (Soft Delete)**: 유저가 탈퇴해도 데이터를 진짜 `DELETE`하지 마세요! `user_is_active = 0`으로 플래그를 바꾸고 탈퇴일시만 기록합니다. **따라서 모든 로그인/인증/조회 쿼리에는 기본적으로 `WHERE user_is_active = 1` 조건이 붙어야 합니다.**
+* **1:1 식별 관계**: 선호도 테이블의 PK는 유저 테이블의 PK를 그대로 이어받아 사용합니다. JPA 구현 시 `@MapsId` 어노테이션을 활용해 부모의 PK를 공유하도록 매핑해 주세요.
+
+### 🏪 식당 (restaurants) & 메뉴 (menus)
+* **평점 및 리뷰 수 자동 집계**: 식당 테이블의 `평균 평점`과 `리뷰 개수`는 매번 계산하면 서버가 느려지므로 미리 저장해 둔 값(반정규화)입니다. **리뷰가 생성, 수정, 삭제(숨김 포함)될 때마다 해당 식당 테이블의 평점/개수를 재계산해서 업데이트**하는 로직을 반드시 구현해야 합니다. (이벤트 기반 또는 트랜잭션 내 처리 권장)
+* **사장님이 탈퇴하면?**: 식당을 등록한 사장님 계정이 탈퇴(Hard Delete)되더라도 식당 데이터는 유지되도록 `ON DELETE SET NULL` 처리가 되어 있습니다. 백엔드에서는 주인 없는 식당 데이터를 관리자 계정으로 이관하는 로직이 필요합니다.
+
+### 📝 리뷰 (reviews) & 답글 (review_replies) & 신고 (reports)
+* **답글은 단 하나만**: 하나의 리뷰에는 사장님 답글이 딱 1개만 달릴 수 있도록 `reply_review_id`에 `UNIQUE` 제약이 걸려 있습니다. 백엔드 단에서 중복 등록 요청 시 선제적으로 예외 처리를 해주세요.
+* **신고 완료 시 숨김**: 리뷰가 신고되어 처리가 완료되면 `review_is_hidden = 1`로 바뀝니다. 일반 유저에게 리뷰 리스트를 보여줄 때는 **숨겨진 리뷰를 필터링**(`WHERE review_is_hidden = 0`)해야 합니다.
+* **중복 신고 방지**: 한 유저가 같은 리뷰를 여러 번 신고할 수 없도록 복합 유니크 키(`uidx_report_review_user`)가 걸려 있습니다. 중복 신고 시 발생하는 DB 에러를 백엔드에서 매끄럽게 비즈니스 예외 메시지로 변환해 주세요.
+
+---
+
+## ⚠️ 4. 주의: 자식 데이터 자동 삭제 (Cascade)
+* 본 DB 스크립트에는 부모 데이터(예: 유저, 식당)가 지워지면 자식 데이터(예: 선호도, 메뉴, 즐겨찾기)가 자동으로 함께 지워지도록 `ON DELETE CASCADE`가 명시적으로 세팅되어 있습니다.
+* 따라서 백엔드(특히 JPA) 단에서 **자식까지 수동으로 하나하나 지우는 코드(`CascadeType.REMOVE` 혹은 `orphanRemoval = true`)를 무분별하게 중복 설정하지 마세요.** DB와 백엔드가 동시에 삭제 명령을 내려 하위 삭제 N+1 문제 등 대형 성능 저하를 일으킬 수 있습니다. DB 제약조건과 프레임워크의 영속성 전이 생명주기를 맞추어 설계해 주세요.

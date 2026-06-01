@@ -215,3 +215,4 @@ CREATE TABLE notices (
     FOREIGN KEY (notice_author_id) REFERENCES users(user_id) ON DELETE SET NULL,
     INDEX idx_notice_visible_pinned (notice_is_visible, notice_is_pinned, notice_created_at DESC)
 ) COMMENT='공지사항';
+

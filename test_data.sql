@@ -1,7 +1,3 @@
--- ============================================================
--- veglu_db 테스트 데이터 삽입 스크립트
--- ============================================================
-
 USE veglu_db;
 
 -- 기존 데이터 초기화 (외래키 체크를 잠시 끄고 안전하게 비웁니다)
@@ -44,17 +40,17 @@ VALUES
 
 
 -- ============================================================
--- 3. 식당 (restaurants) 데이터 (홍대/강남 가상 좌표 반영)
+-- 3. 식당 (restaurants) 데이터 (Point 내장 함수 사용 최종 안정 버전)
 -- ============================================================
 INSERT INTO restaurants (restaurant_id, restaurant_owner_id, restaurant_name, restaurant_address, restaurant_address_detail, restaurant_location, restaurant_phone, restaurant_category, restaurant_sub_category, restaurant_price_range, restaurant_business_hours, restaurant_holidays, restaurant_last_order_time, restaurant_avg_rating, restaurant_review_count, restaurant_has_parking, restaurant_has_room, restaurant_has_delivery, restaurant_has_reservation, restaurant_payment_methods, restaurant_amenities, restaurant_tags, restaurant_atmosphere, restaurant_sns_links, restaurant_status, restaurant_is_verified)
 VALUES
--- 1번 식당: 홍대입구역 근처 비건 양식당
-(1, 4, '그린키친 홍대점', '서울 마포구 양화로 161', '3층', ST_GeomFromText('POINT(126.9244 37.5567)', 4326), '02-123-4567', '양식', '파스타/스테이크', '1만~2만원대', 
+-- 1번 식당: 홍대입구역 근처 (Point 함수 사용: 경도, 위도 순서로 입력)
+(1, 4, '그린키친 홍대점', '서울 마포구 양화로 161', '3층', ST_SRID(Point(126.9244, 37.5567), 4326), '02-123-4567', '양식', '파스타/스테이크', '1만~2만원대', 
  '{"MON": {"open": "11:00", "close": "21:00", "break_start": "15:00", "break_end": "17:00"}, "TUE": {"open": "11:00", "close": "21:00", "break_start": "15:00", "break_end": "17:00"}, "WED": {"open": "11:00", "close": "21:00", "break_start": "15:00", "break_end": "17:00"}, "THU": {"open": "11:00", "close": "21:00", "break_start": "15:00", "break_end": "17:00"}, "FRI": {"open": "11:00", "close": "22:00", "break_start": "15:00", "break_end": "17:00"}, "SAT": {"open": "11:00", "close": "22:00", "break_start": null, "break_end": null}, "SUN": {"open": "11:00", "close": "20:00", "break_start": null, "break_end": null}}', 
  '연중무휴', '20:30:00', 4.50, 2, 1, 0, 1, 1, '["신용카드", "네이버페이", "카카오페이"]', '["무선인터넷", "반려동물동반"]', '["비건인증", "분위기맛집", "친환경"]', '["모던한", "조용한"]', '{"instagram": "https://instagram.com/green_kitchen"}', '영업중', 1),
 
--- 2번 식당: 강남역 근처 비건 베이커리 카페 (점주 없음-NULL)
-(2, NULL, '베리베건 카페', '서울 강남구 강남대로 396', '1층', ST_GeomFromText('POINT(127.0276 37.4979)', 4326), '02-987-6543', '카페/디저트', '베이커리', '1만원 이하', 
+-- 2번 식당: 강남역 근처 (Point 함수 사용: 경도, 위도 순서로 입력)
+(2, NULL, '베리베건 카페', '서울 강남구 강남대로 396', '1층', ST_SRID(Point(127.0276, 37.4979), 4326), '02-987-6543', '카페/디저트', '베이커리', '1만원 이하', 
  '{"MON": {"open": "09:00", "close": "20:00"}, "TUE": {"open": "09:00", "close": "20:00"}, "WED": {"open": "09:00", "close": "20:00"}, "THU": {"open": "09:00", "close": "20:00"}, "FRI": {"open": "09:00", "close": "21:00"}, "SAT": {"open": "10:00", "close": "21:00"}, "SUN": {"is_closed": true}}', 
  '매주 일요일 정기휴무', '19:30:00', 5.00, 1, 0, 0, 0, 0, '["신용카드", "제로페이"]', '["콘센트", "주차가능"]', '["글루텐프리", "쌀빵", "디저트맛집"]', '["아늑한", "인스타감성"]', '{"blog": "https://blog.naver.com/very_vegan"}', '영업중', 0);
 
