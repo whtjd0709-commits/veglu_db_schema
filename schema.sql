@@ -55,7 +55,7 @@ CREATE TABLE restaurants (
     restaurant_address         VARCHAR(255) NOT NULL             COMMENT '도로명 주소',
     restaurant_address_detail  VARCHAR(255)                      COMMENT '상세 주소 (층, 호수 등)',
     restaurant_location        POINT NOT NULL SRID 4326          COMMENT '위경도 좌표 (WGS84)',
-    restaurant_phone           VARCHAR(50)                       COMMENT '전화번호',
+    restaurant_phone           VARCHAR(50)                       COMMENT '가게 전화번호',
     restaurant_category        VARCHAR(50)                       COMMENT '음식 카테고리',
     restaurant_sub_category    VARCHAR(100)                      COMMENT '세부 분류',
     restaurant_price_range     VARCHAR(50) NOT NULL              COMMENT '가격대',
