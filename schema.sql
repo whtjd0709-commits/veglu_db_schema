@@ -58,7 +58,7 @@ CREATE TABLE restaurants (
     restaurant_phone           VARCHAR(50)                       COMMENT '가게 전화번호',
     restaurant_category        VARCHAR(50)                       COMMENT '음식 카테고리',
     restaurant_sub_category    VARCHAR(100)                      COMMENT '세부 분류',
-    restaurant_price_range     VARCHAR(50) NOT NULL              COMMENT '가격대',
+    restaurant_price_range     VARCHAR(50)                       COMMENT '가격대',
     restaurant_business_hours  JSON NOT NULL                     COMMENT '요일별 영업시간',
     restaurant_holidays        VARCHAR(255)                      COMMENT '휴무일',
     restaurant_last_order_time TIME                              COMMENT '라스트 오더 시간',
