@@ -158,6 +158,7 @@ CREATE TABLE review_replies (
 CREATE TABLE review_reports (
     report_id           BIGINT AUTO_INCREMENT PRIMARY KEY          COMMENT '신고 고유 ID',
     report_review_id    BIGINT NOT NULL                            COMMENT '신고 대상 리뷰 ID (FK)',
+    report_restaurant_id BIGINT NOT NULL                           COMMENT '신고 대상 식당 ID (FK)',
     report_user_id      BIGINT NOT NULL                            COMMENT '신고자 user_id (FK)',
     report_category     ENUM('욕설/비방', '허위리뷰', '광고/홍보', '무관한내용') NOT NULL COMMENT '신고 카테고리',
     report_detail       TEXT                                       COMMENT '신고 상세 사유 (선택 입력)',
@@ -167,13 +168,15 @@ CREATE TABLE review_reports (
     report_created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '신고 접수일시',
     report_resolved_at  TIMESTAMP                                  COMMENT '처리 완료일시',
 
-    FOREIGN KEY (report_review_id) REFERENCES reviews(review_id)  ON DELETE CASCADE,
-    FOREIGN KEY (report_user_id)   REFERENCES users(user_id)       ON DELETE CASCADE,
-    FOREIGN KEY (report_admin_id)  REFERENCES users(user_id)       ON DELETE SET NULL,
+    FOREIGN KEY (report_review_id)     REFERENCES reviews(reviews_id)    ON DELETE CASCADE,
+    FOREIGN KEY (report_restaurant_id) REFERENCES restaurants(restaurant_id) ON DELETE CASCADE,
+    FOREIGN KEY (report_user_id)       REFERENCES users(user_id)          ON DELETE CASCADE,
+    FOREIGN KEY (report_admin_id)      REFERENCES users(user_id)          ON DELETE SET NULL,
 
     UNIQUE KEY uidx_report_review_user  (report_review_id, report_user_id),
     INDEX idx_report_status_created     (report_status, report_created_at DESC),
     INDEX idx_report_review             (report_review_id),
+    INDEX idx_report_restaurant         (report_restaurant_id), -- 식당별 신고 통계/조회용 인덱스 추가
     INDEX idx_report_user               (report_user_id)
 ) COMMENT='리뷰 신고 내역';
 
