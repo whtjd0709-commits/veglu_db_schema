@@ -158,7 +158,6 @@ CREATE TABLE review_replies (
 CREATE TABLE review_reports (
     report_id           BIGINT AUTO_INCREMENT PRIMARY KEY          COMMENT '신고 고유 ID',
     report_review_id    BIGINT NOT NULL                            COMMENT '신고 대상 리뷰 ID (FK)',
-    report_restaurant_id BIGINT NOT NULL                           COMMENT '신고 대상 식당 ID (FK)',
     report_user_id      BIGINT NOT NULL                            COMMENT '신고자 user_id (FK)',
     report_category     ENUM('욕설/비방', '허위리뷰', '광고/홍보', '무관한내용') NOT NULL COMMENT '신고 카테고리',
     report_detail       TEXT                                       COMMENT '신고 상세 사유 (선택 입력)',
